@@ -1,1 +1,628 @@
-
+{
+  "version": "1.0.0",
+  "last_updated": "2025-12-31",
+  "description": "Daily Quests: Library of 20+ quest templates that adapt to user level, location, time, and behavioral patterns",
+  "daily_quests": [
+    {
+      "id": "quest_001",
+      "quest_name": "The Faraday Protocol",
+      "category": "presence",
+      "difficulty": "moderate",
+      "description": "Go completely offline for 1 hour. Phone stays on (for emergencies), but you don't touch it. No checking. No peeking. Just exist.",
+      "success_condition": "1 hour without touching phone, verified by screen time data",
+      "duration_min": 60,
+      "unlock_level": "npc",
+      "verification_method": "screen_time_api",
+      "rewards": {
+        "xp": 100,
+        "static_cleared": 30,
+        "conscious_day_credit": true,
+        "badge": "faraday_cage"
+      },
+      "contextual_triggers": {
+        "time": ["evening", "weekend"],
+        "behavior_pattern": ["high_pickup_count", "evening_scroll_pattern"]
+      },
+      "instructions": [
+        "Choose your hour (ideally when you usually scroll)",
+        "Tell someone you're offline if needed",
+        "Put phone face-down, sound on",
+        "Do anything else: read, walk, cook, stare at walls",
+        "After 1 hour, check back in"
+      ],
+      "failure_grace": "If you slip, restart the timer. You get 2 attempts per day.",
+      "tags": ["gen_z", "millennial", "universal"],
+      "research_note": "Digital fasts reduce anxiety and improve attention span (Wilcockson et al., 2019)"
+    },
+    {
+      "id": "quest_002",
+      "quest_name": "Touch Grass",
+      "category": "presence",
+      "difficulty": "easy",
+      "description": "Go outside. Find grass, dirt, or nature. Stay for 15 minutes. Phone in pocket or bag. GPS will verify.",
+      "success_condition": "15+ minutes outdoors, GPS verified + low screen time during window",
+      "duration_min": 15,
+      "unlock_level": "npc",
+      "verification_method": "gps_location",
+      "rewards": {
+        "xp": 50,
+        "static_cleared": 20,
+        "conscious_day_credit": true,
+        "badge": "grass_toucher"
+      },
+      "contextual_triggers": {
+        "time": ["morning", "afternoon"],
+        "weather": ["sunny", "clear"],
+        "location": ["near_park", "outdoor_space_available"]
+      },
+      "instructions": [
+        "Leave your space (home, office, wherever)",
+        "Find green space, park, or outdoor area",
+        "Stand, sit, or walk for 15 minutes",
+        "Phone can stay in pocket—just don't use it",
+        "Breathe. Look around. Be here."
+      ],
+      "failure_grace": "Checked your phone? That's okay. Put it away and finish the 15 minutes.",
+      "tags": ["gen_z", "millennial", "universal"],
+      "research_note": "Nature exposure for 15+ min reduces cortisol (Hunter et al., 2019)"
+    },
+    {
+      "id": "quest_003",
+      "quest_name": "The IRL Friend",
+      "category": "connection",
+      "difficulty": "moderate",
+      "description": "Call someone. Not text. Voice or video. Talk for at least 10 minutes. Hear a human voice.",
+      "success_condition": "10+ minute call logged in phone app",
+      "duration_min": 10,
+      "unlock_level": "npc",
+      "verification_method": "phone_app_check",
+      "rewards": {
+        "xp": 75,
+        "static_cleared": 25,
+        "conscious_day_credit": true,
+        "badge": "voice_human"
+      },
+      "contextual_triggers": {
+        "time": ["evening", "weekend"],
+        "behavior_pattern": ["high_social_media_use", "low_call_frequency"]
+      },
+      "instructions": [
+        "Pick someone you haven't spoken to in a while",
+        "Call them (voice or video—your choice)",
+        "Talk for at least 10 minutes",
+        "No multitasking during the call",
+        "Be present. Listen. Connect."
+      ],
+      "failure_grace": "Went to voicemail? Try someone else. The quest is about connection, not perfection.",
+      "tags": ["millennial", "universal"],
+      "research_note": "Voice calls increase bonding more than text (Kumar & Epley, 2021)"
+    },
+    {
+      "id": "quest_004",
+      "quest_name": "The Morning Pledge",
+      "category": "presence",
+      "difficulty": "easy",
+      "description": "Don't touch your phone for 1 hour after waking. Sound on. No airplane mode. Just don't pick it up.",
+      "success_condition": "First phone touch 60+ minutes after waking",
+      "duration_min": 60,
+      "unlock_level": "npc",
+      "verification_method": "honor_system",
+      "rewards": {
+        "xp": 80,
+        "static_cleared": 25,
+        "conscious_day_credit": true,
+        "badge": "morning_sovereign"
+      },
+      "contextual_triggers": {
+        "time": ["morning"],
+        "behavior_pattern": ["immediate_phone_check_on_wake"]
+      },
+      "instructions": [
+        "Set this intention before sleep",
+        "When you wake, note the time mentally",
+        "Do your morning routine without your phone",
+        "After 1 hour, you're free to check in",
+        "Notice how your morning feels different"
+      ],
+      "failure_grace": "Autopilot grabbed it? Forgive yourself. Put it down. Try to finish the hour.",
+      "tags": ["gen_z", "millennial", "universal"],
+      "research_note": "Morning phone use sets reactivity patterns for the day (Kushlev & Dunn, 2019)"
+    },
+    {
+      "id": "quest_005",
+      "quest_name": "The Analog Evening",
+      "category": "presence",
+      "difficulty": "moderate",
+      "description": "No screens for 1 hour before bed. Read, journal, stretch, talk. Let your brain wind down naturally.",
+      "success_condition": "60 minutes of zero screen time before sleep",
+      "duration_min": 60,
+      "unlock_level": "glitch",
+      "verification_method": "screen_time_api",
+      "rewards": {
+        "xp": 90,
+        "static_cleared": 30,
+        "conscious_day_credit": true,
+        "badge": "sleep_guardian"
+      },
+      "contextual_triggers": {
+        "time": ["evening"],
+        "behavior_pattern": ["bedtime_scrolling", "late_night_usage"]
+      },
+      "instructions": [
+        "1 hour before your target bedtime, put all screens away",
+        "Read a physical book, journal, do gentle stretching",
+        "Dim the lights if you can",
+        "Let your body naturally prepare for sleep",
+        "Notice if you sleep better"
+      ],
+      "failure_grace": "Checked 'one last thing'? Close it. You still have time to finish the hour.",
+      "tags": ["millennial", "universal"],
+      "research_note": "Pre-sleep screen use delays circadian rhythm (Chang et al., 2015)"
+    },
+    {
+      "id": "quest_006",
+      "quest_name": "The Creation Block",
+      "category": "creation",
+      "difficulty": "moderate",
+      "description": "Make something with your hands for 30 minutes. Cook, draw, build, write. Create, don't consume.",
+      "success_condition": "30 minutes logged on timer, self-reported creation type",
+      "duration_min": 30,
+      "unlock_level": "glitch",
+      "verification_method": "timer_based",
+      "rewards": {
+        "xp": 85,
+        "static_cleared": 30,
+        "conscious_day_credit": true,
+        "badge": "maker"
+      },
+      "contextual_triggers": {
+        "time": ["afternoon", "evening", "weekend"],
+        "behavior_pattern": ["high_consumption_low_creation"]
+      },
+      "instructions": [
+        "Choose your medium: cooking, drawing, writing, crafting, building",
+        "Set a 30-minute timer",
+        "Create without scrolling for inspiration",
+        "It doesn't have to be good—just made by you",
+        "Document what you made (optional)"
+      ],
+      "failure_grace": "Looked something up? That's okay. Close it and keep creating.",
+      "tags": ["gen_z", "millennial", "universal"],
+      "research_note": "Creative activities increase dopamine and reduce stress (Stuckey & Nobel, 2010)"
+    },
+    {
+      "id": "quest_007",
+      "quest_name": "The Golden Hour Walk",
+      "category": "presence",
+      "difficulty": "easy",
+      "description": "Walk outside during sunrise or sunset for 15 minutes. Watch the sky. Feel the shift.",
+      "success_condition": "15 minutes outdoors during golden hour, GPS verified",
+      "duration_min": 15,
+      "unlock_level": "npc",
+      "verification_method": "gps_location",
+      "rewards": {
+        "xp": 60,
+        "static_cleared": 20,
+        "conscious_day_credit": true,
+        "badge": "golden_witness"
+      },
+      "contextual_triggers": {
+        "time": ["sunrise", "sunset"],
+        "weather": ["clear", "partly_cloudy"]
+      },
+      "instructions": [
+        "Check sunrise/sunset time for your location",
+        "Go outside 10 minutes before",
+        "Walk or stand and watch the transition",
+        "Phone can be with you—just keep it pocketed",
+        "Notice the colors, the temperature, the quality of light"
+      ],
+      "failure_grace": "Missed the golden hour? Walk during regular daylight. Still counts, reduced XP.",
+      "tags": ["millennial", "universal"],
+      "research_note": "Natural light exposure regulates circadian rhythm (Wright et al., 2013)"
+    },
+    {
+      "id": "quest_008",
+      "quest_name": "The Kindness Drop",
+      "category": "connection",
+      "difficulty": "easy",
+      "description": "Do one anonymous act of kindness today. Pay for someone's coffee, leave a nice note, help a stranger.",
+      "success_condition": "Self-reported action + brief description",
+      "duration_min": 10,
+      "unlock_level": "npc",
+      "verification_method": "self_report",
+      "rewards": {
+        "xp": 70,
+        "static_cleared": 20,
+        "conscious_day_credit": true,
+        "badge": "secret_kindness"
+      },
+      "contextual_triggers": {
+        "time": ["any"],
+        "behavior_pattern": ["high_self_focus", "isolation_pattern"]
+      },
+      "instructions": [
+        "Think of one small act of kindness",
+        "Do it anonymously if possible",
+        "Examples: compliment, pay-it-forward, help someone carry something",
+        "Don't post about it. Just do it.",
+        "Notice how it feels after"
+      ],
+      "failure_grace": "Couldn't find an opportunity? That's okay. Try tomorrow. The intention matters.",
+      "tags": ["gen_z", "millennial", "universal"],
+      "research_note": "Acts of kindness increase happiness and reduce stress (Curry et al., 2018)"
+    },
+    {
+      "id": "quest_009",
+      "quest_name": "The Tech-Free Commute",
+      "category": "presence",
+      "difficulty": "moderate",
+      "description": "Commute without touching your phone. Drive, walk, or ride—but don't scroll. Music via smartwatch/car is fine.",
+      "success_condition": "Zero screen time during commute window, GPS verified",
+      "duration_min": 20,
+      "unlock_level": "glitch",
+      "verification_method": "gps_location",
+      "rewards": {
+        "xp": 80,
+        "static_cleared": 25,
+        "conscious_day_credit": true,
+        "badge": "mindful_traveler"
+      },
+      "contextual_triggers": {
+        "time": ["morning", "evening"],
+        "behavior_pattern": ["commute_scrolling"]
+      },
+      "instructions": [
+        "Before leaving, queue up music/podcast if needed",
+        "Put phone in bag, pocket, or center console",
+        "Drive, walk, or ride without checking",
+        "Notice your surroundings instead",
+        "Arrive without digital baggage"
+      ],
+      "failure_grace": "Checked for directions? That's utility, not scrolling. Continue.",
+      "tags": ["millennial", "universal"],
+      "research_note": "Mindful commuting reduces stress and improves arrival mood (Legrain et al., 2015)"
+    },
+    {
+      "id": "quest_010",
+      "quest_name": "The Meal Meditation",
+      "category": "presence",
+      "difficulty": "easy",
+      "description": "Eat one full meal with your phone in another room. Taste your food. Chew slowly. Be here.",
+      "success_condition": "Meal duration 15+ minutes, zero screen time during meal",
+      "duration_min": 15,
+      "unlock_level": "npc",
+      "verification_method": "screen_time_api",
+      "rewards": {
+        "xp": 65,
+        "static_cleared": 20,
+        "conscious_day_credit": true,
+        "badge": "conscious_eater"
+      },
+      "contextual_triggers": {
+        "time": ["lunch", "dinner"],
+        "behavior_pattern": ["eating_while_scrolling"]
+      },
+      "instructions": [
+        "Before sitting down, put phone in another room",
+        "Sit at a table (not couch, not bed)",
+        "Eat slowly. Chew each bite 15-20 times.",
+        "Notice taste, texture, temperature",
+        "Finish when you're full, not when content ends"
+      ],
+      "failure_grace": "Habit pulled you to check? Forgive yourself. Finish the meal phone-free.",
+      "tags": ["universal"],
+      "research_note": "Mindful eating improves digestion and reduces overeating (Wansink, 2006)"
+    },
+    {
+      "id": "quest_011",
+      "quest_name": "The Word Sprint",
+      "category": "creation",
+      "difficulty": "easy",
+      "description": "Write 200 words by hand. Journal entry, letter, story—anything. Feel the pen move.",
+      "success_condition": "Timer proof (15 min) + self-reported completion",
+      "duration_min": 15,
+      "unlock_level": "npc",
+      "verification_method": "timer_based",
+      "rewards": {
+        "xp": 60,
+        "static_cleared": 15,
+        "conscious_day_credit": true,
+        "badge": "word_smith"
+      },
+      "contextual_triggers": {
+        "time": ["morning", "evening"],
+        "behavior_pattern": ["low_creative_output"]
+      },
+      "instructions": [
+        "Grab paper and pen (not laptop, not phone notes)",
+        "Set 15-minute timer",
+        "Write continuously. No editing. No deleting.",
+        "200 words is about one page",
+        "Let the words flow without judgment"
+      ],
+      "failure_grace": "Didn't hit 200? That's fine. The act of writing matters more than the count.",
+      "tags": ["gen_z", "millennial", "universal"],
+      "research_note": "Handwriting activates different brain areas than typing (Mueller & Oppenheimer, 2014)"
+    },
+    {
+      "id": "quest_012",
+      "quest_name": "The Cold Plunge Challenge",
+      "category": "restoration",
+      "difficulty": "challenging",
+      "description": "Take a 2-minute cold shower. Start warm, end cold. Breathe through it. Feel alive.",
+      "success_condition": "Self-reported completion + timer verification",
+      "duration_min": 2,
+      "unlock_level": "hacker",
+      "verification_method": "self_report",
+      "rewards": {
+        "xp": 120,
+        "static_cleared": 35,
+        "conscious_day_credit": true,
+        "badge": "ice_heart"
+      },
+      "contextual_triggers": {
+        "time": ["morning"],
+        "behavior_pattern": ["seeking_intensity", "high_stress"]
+      },
+      "instructions": [
+        "Start your shower at normal temperature",
+        "After washing, gradually turn temp to cold",
+        "Stay under cold water for 2 full minutes",
+        "Breathe slowly and deeply",
+        "Exit when timer ends. Feel the rush."
+      ],
+      "failure_grace": "Only made it 1 minute? Still counts for 50% XP. Cold is hard.",
+      "tags": ["gen_z", "millennial"],
+      "research_note": "Cold exposure increases dopamine and norepinephrine (Shevchuk, 2008)"
+    },
+    {
+      "id": "quest_013",
+      "quest_name": "The Social Scroll Ban",
+      "category": "presence",
+      "difficulty": "challenging",
+      "description": "No social media apps for 6 hours. Instagram, TikTok, Twitter, all of it—closed. You can still text.",
+      "success_condition": "Zero minutes on social apps for 6-hour window",
+      "duration_min": 360,
+      "unlock_level": "hacker",
+      "verification_method": "screen_time_api",
+      "rewards": {
+        "xp": 150,
+        "static_cleared": 50,
+        "conscious_day_credit": true,
+        "badge": "feed_free"
+      },
+      "contextual_triggers": {
+        "time": ["any"],
+        "behavior_pattern": ["high_social_media_addiction"]
+      },
+      "instructions": [
+        "Choose your 6-hour window (during waking hours)",
+        "Set app limits or delete apps temporarily if needed",
+        "You can still call, text, use maps, music",
+        "Notice the urge to check. Let it pass.",
+        "After 6 hours, reflect on how you feel"
+      ],
+      "failure_grace": "Slipped once? Close the app and finish the 6 hours. One slip = warning, not failure.",
+      "tags": ["gen_z", "millennial"],
+      "research_note": "Social media breaks reduce FOMO and improve well-being (Tromholt, 2016)"
+    },
+    {
+      "id": "quest_014",
+      "quest_name": "The Museum Wander",
+      "category": "creation",
+      "difficulty": "moderate",
+      "description": "Visit a museum, gallery, or library. Spend 45+ minutes. Phone on airplane mode. Just observe.",
+      "success_condition": "GPS verification at cultural location + 45 min duration",
+      "duration_min": 45,
+      "unlock_level": "glitch",
+      "verification_method": "gps_location",
+      "rewards": {
+        "xp": 100,
+        "static_cleared": 35,
+        "conscious_day_credit": true,
+        "badge": "culture_seeker"
+      },
+      "contextual_triggers": {
+        "time": ["weekend", "afternoon"],
+        "location": ["near_museum", "near_gallery", "near_library"]
+      },
+      "instructions": [
+        "Find a nearby museum, gallery, or library",
+        "Put phone on airplane mode (photos okay)",
+        "Wander slowly. Read plaques. Sit with art.",
+        "No Instagram documentation—just experience",
+        "Leave when you're ready, minimum 45 minutes"
+      ],
+      "failure_grace": "Turned off airplane mode to check something? Put it back. Keep wandering.",
+      "tags": ["millennial", "universal"],
+      "research_note": "Museum visits increase creativity and reduce rumination (Clow & Fredhoi, 2006)"
+    },
+    {
+      "id": "quest_015",
+      "quest_name": "The Lunch Escape",
+      "category": "presence",
+      "difficulty": "easy",
+      "description": "Eat lunch away from your desk/usual spot. Go outside or to another room. Phone stays behind.",
+      "success_condition": "GPS shows location change + 20 min duration + low screen time",
+      "duration_min": 20,
+      "unlock_level": "npc",
+      "verification_method": "gps_location",
+      "rewards": {
+        "xp": 55,
+        "static_cleared": 15,
+        "conscious_day_credit": true,
+        "badge": "lunch_liberator"
+      },
+      "contextual_triggers": {
+        "time": ["lunch"],
+        "behavior_pattern": ["desk_eating", "working_through_lunch"]
+      },
+      "instructions": [
+        "When lunch time comes, pack up your food",
+        "Leave phone at your desk/in your bag",
+        "Go outside, to a break room, or different space",
+        "Eat slowly. Look around. Rest.",
+        "Return to work after 20+ minutes"
+      ],
+      "failure_grace": "Brought your phone? Put it face down. Don't use it. Quest still counts.",
+      "tags": ["millennial", "universal"],
+      "research_note": "Lunch breaks away from workspace improve afternoon productivity (Kim et al., 2017)"
+    },
+    {
+      "id": "quest_016",
+      "quest_name": "The Sonic Journey",
+      "category": "restoration",
+      "difficulty": "moderate",
+      "description": "Listen to brown/white noise or binaural beats for 20 minutes. Lie down. Let your brain rest.",
+      "success_condition": "20 min audio playback + minimal movement (motion sensors)",
+      "duration_min": 20,
+      "unlock_level": "glitch",
+      "verification_method": "audio_app_check",
+      "rewards": {
+        "xp": 70,
+        "static_cleared": 25,
+        "conscious_day_credit": true,
+        "badge": "frequency_traveler"
+      },
+      "contextual_triggers": {
+        "time": ["afternoon", "evening"],
+        "behavior_pattern": ["high_stress", "overstimulation"]
+      },
+      "instructions": [
+        "Find brown noise, white noise, or binaural beats (YouTube, Spotify, app)",
+        "Lie down in a comfortable position",
+        "Headphones on. Press play. Close your eyes.",
+        "Let the sound wash over you for 20 minutes",
+        "Notice how your nervous system settles"
+      ],
+      "failure_grace": "Fell asleep? Perfect. That's what your body needed. Quest complete.",
+      "tags": ["gen_z", "millennial"],
+      "research_note": "Brown noise masks distractions and promotes parasympathetic activation (Soderlund et al., 2007)"
+    },
+    {
+      "id": "quest_017",
+      "quest_name": "The Conversation Carry",
+      "category": "connection",
+      "difficulty": "moderate",
+      "description": "Have a 20-minute face-to-face conversation with someone. No phones visible. Just talk.",
+      "success_condition": "Self-reported + 20 min timer verification + screen time check",
+      "duration_min": 20,
+      "unlock_level": "glitch",
+      "verification_method": "self_report",
+      "rewards": {
+        "xp": 90,
+        "static_cleared": 30,
+        "conscious_day_credit": true,
+        "badge": "deep_connector"
+      },
+      "contextual_triggers": {
+        "time": ["evening", "weekend"],
+        "behavior_pattern": ["low_in_person_interaction"]
+      },
+      "instructions": [
+        "Ask someone to have a conversation (friend, family, partner, roommate)",
+        "Both put phones away (not on table—away)",
+        "Talk for at least 20 minutes",
+        "No checking, no 'one sec' moments",
+        "Ask questions. Listen. Connect."
+      ],
+      "failure_grace": "Someone's phone went off? That's okay. Ignore it. Keep talking.",
+      "tags": ["millennial", "universal"],
+      "research_note": "Phone-free conversations increase empathy and connection (Misra et al., 2016)"
+    },
+    {
+      "id": "quest_018",
+      "quest_name": "The Bookshop Treasure Hunt",
+      "category": "creation",
+      "difficulty": "moderate",
+      "description": "Visit a bookstore. Browse for 30+ minutes. Read first pages. Buy one or leave empty-handed.",
+      "success_condition": "GPS at bookstore + 30 min duration + low screen time",
+      "duration_min": 30,
+      "unlock_level": "glitch",
+      "verification_method": "gps_location",
+      "rewards": {
+        "xp": 85,
+        "static_cleared": 30,
+        "conscious_day_credit": true,
+        "badge": "page_wanderer"
+      },
+      "contextual_triggers": {
+        "time": ["weekend", "afternoon"],
+        "location": ["near_bookstore"]
+      },
+      "instructions": [
+        "Find a local bookstore (not Amazon, not your phone)",
+        "Walk in with no specific title in mind",
+        "Browse aisles. Pick up books. Read back covers.",
+        "Read first pages of 3-5 books",
+        "Buy one if it calls to you, or leave with inspiration"
+      ],
+      "failure_grace": "Looked up a review on your phone? Close it. Trust your gut instead.",
+      "tags": ["millennial", "universal"],
+      "research_note": "Analog browsing reduces decision fatigue and increases serendipity (Thudt et al., 2012)"
+    },
+    {
+      "id": "quest_019",
+      "quest_name": "The Micro-Adventure",
+      "category": "presence",
+      "difficulty": "challenging",
+      "description": "Explore somewhere new for 2+ hours. Phone on silent in bag. Get lost. Find your way.",
+      "success_condition": "GPS shows new location + 2 hour duration + minimal screen time",
+      "duration_min": 120,
+      "unlock_level": "hacker",
+      "verification_method": "gps_location",
+      "rewards": {
+        "xp": 180,
+        "static_cleared": 60,
+        "conscious_day_credit": true,
+        "badge": "urban_explorer"
+      },
+      "contextual_triggers": {
+        "time": ["weekend", "afternoon"],
+        "behavior_pattern": ["routine_stagnation", "low_novelty"]
+      },
+      "instructions": [
+        "Pick a neighborhood, trail, or part of town you've never explored",
+        "Bring phone for safety but keep it in bag on silent",
+        "Wander for 2+ hours. Get lost on purpose.",
+        "Use maps if truly lost, but try to navigate by intuition",
+        "Notice details: architecture, sounds, people, smells"
+      ],
+      "failure_grace": "Checked your phone a few times? That's okay. Put it away and keep exploring.",
+      "tags": ["gen_z", "millennial"],
+      "research_note": "Novel experiences increase dopamine and improve memory encoding (Wittmann et al., 2007)"
+    },
+    {
+      "id": "quest_020",
+      "quest_name": "The Digital Sunset",
+      "category": "presence",
+      "difficulty": "mastery",
+      "description": "No screens after 6 PM until 6 AM next morning. 12 hours. The ultimate reclamation.",
+      "success_condition": "Zero screen time from 6 PM to 6 AM next day",
+      "duration_min": 720,
+      "unlock_level": "main_character",
+      "verification_method": "screen_time_api",
+      "rewards": {
+        "xp": 250,
+        "static_cleared": 100,
+        "conscious_day_credit": true,
+        "badge": "night_sovereign"
+      },
+      "contextual_triggers": {
+        "time": ["evening"],
+        "behavior_pattern": ["ready_for_challenge", "high_level_user"]
+      },
+      "instructions": [
+        "At 6 PM, put all screens away (phone, laptop, tablet, TV)",
+        "Cook, read, talk, create, rest—anything analog",
+        "Sleep without phone as alarm (use analog clock)",
+        "Wake naturally. Wait until 6 AM to check anything.",
+        "Notice how your evening and morning feel different"
+      ],
+      "failure_grace": "This is mastery-level. If you slip, restart tomorrow. No partial credit.",
+      "tags": ["millennial", "oracle"],
+      "research_note": "Extended digital fasts reset dopamine baselines and improve sleep architecture (Lembke, 2021)"
+    }
+  ]
+}
