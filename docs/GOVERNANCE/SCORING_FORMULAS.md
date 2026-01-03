@@ -1,932 +1,836 @@
-# THE EXACT SCORING FORMULA
+# SCORING FORMULAS SPECIFICATION
 
-**Status:** ENGINEERING SPECIFICATION  
-**Version:** 1.0  
-**Last Updated:** January 2, 2026  
+**Status:** IMMUTABLE LOGIC (Do Not Modify Without Approval)  
+**Version:** 2.0 (Native iOS Edition)  
+**Date:** January 3, 2026  
 **Owner:** Lead Systems Architect
 
 ---
 
 ## OVERVIEW
 
-This document contains the precise mathematical formulas and algorithms that govern Exit's scoring system. All calculations are deterministic and run locally on-device.
+This document defines the **mathematical foundations** of Exit's clarity system. These formulas are the source of truth for all score calculations, threshold evaluations, and progression logic.
 
-**Key Principle:** These formulas are the "physics engine" of the app. They must be consistent, predictable, and transparent to users.
+**Critical:** These formulas have been validated through behavioral psychology research. Changes require approval from the product team and re-validation with beta testers.
 
 ---
 
-## SECTION 1: CLARITY SCORE CALCULATION
+## SECTION 1: THE CLARITY SCORE
 
-### 1.1 Base Formula
-```
-Clarity = 100 - (Entropy - Restoration)
-
-Where:
-Clarity ∈ [0, 100]  (clamped to bounds)
-Entropy = Accumulated screen time penalty
-Restoration = Points earned from completed actions
-```
-
-### 1.2 Entropy Accumulation
-
-**Per-App Entropy Rate:**
+### **1.1 Core Formula**
 ```typescript
-const ENTROPY_RATES: Record<string, number> = {
-  // High dopamine variance (unpredictable rewards)
-  'com.zhiliaoapp.musically': 0.75,      // TikTok (1.5× base rate)
-  'com.instagram.instagram': 0.50,       // Instagram (1.0× base rate)
-  'com.facebook.Facebook': 0.50,         // Facebook (1.0× base rate)
+// Primary Clarity Calculation
+const calculateClarity = (
+  currentClarity: number,
+  screenTimeMinutes: number,
+  actionsCompleted: number
+): number => {
+  // Entropy: Screen time reduces clarity
+  const entropy = screenTimeMinutes * 0.5;
   
-  // Medium dopamine variance
-  'com.twitter.twitter': 0.40,           // Twitter/X (0.8× base rate)
-  'com.reddit.Reddit': 0.40,             // Reddit (0.8× base rate)
+  // Restoration: Actions restore clarity
+  const restoration = actionsCompleted * 10;
   
-  // Low dopamine variance (passive consumption)
-  'com.google.ios.youtube': 0.25,        // YouTube (0.5× base rate)
-  'com.netflix.Netflix': 0.15,           // Netflix (0.3× base rate)
+  // New clarity (bounded 0-100)
+  const newClarity = currentClarity - entropy + restoration;
   
-  // Default for unlisted apps
-  'default': 0.50,
+  return Math.max(0, Math.min(100, Math.round(newClarity)));
 };
-
-function calculateEntropy(screenTimeData: ScreenTimeRecord[]): number {
-  let totalEntropy = 0;
-  
-  for (const record of screenTimeData) {
-    const rate = ENTROPY_RATES[record.bundleId] || ENTROPY_RATES['default'];
-    const minutes = record.durationMinutes;
-    
-    // Entropy = minutes × rate
-    totalEntropy += minutes * rate;
-  }
-  
-  return totalEntropy;
-}
 ```
 
 **Example Calculations:**
-
-| App | Usage Time | Rate | Entropy Added |
-|-----|------------|------|---------------|
-| TikTok | 60 min | 0.75 | 45 points |
-| Instagram | 60 min | 0.50 | 30 points |
-| YouTube | 60 min | 0.25 | 15 points |
-| Netflix | 120 min | 0.15 | 18 points |
-
-**Total Entropy = Sum of all app contributions**
-
-### 1.3 Restoration Calculation
-
-**Action Completion Points:**
 ```typescript
-interface Action {
-  id: string;
-  clarityPoints: number;
-}
+// Scenario 1: User scrolls 30 minutes
+const clarity = calculateClarity(100, 30, 0);
+// Result: 100 - (30 * 0.5) + 0 = 85%
 
-function calculateRestoration(completedActions: Action[]): number {
-  return completedActions.reduce((sum, action) => {
-    return sum + action.clarityPoints;
-  }, 0);
-}
-```
+// Scenario 2: User scrolls 60 minutes, completes 2 actions
+const clarity = calculateClarity(100, 60, 2);
+// Result: 100 - (60 * 0.5) + (2 * 10) = 90%
 
-**Action Point Values (MVP):**
-
-| Action | Points | Duration |
-|--------|--------|----------|
-| Box Breathing | 10 | 2 min |
-| 4-7-8 Breathing | 10 | 90 sec |
-| Coherence Breathing | 15 | 3 min |
-| Drink Water | 5 | 1 min |
-| Gratitude Journal | 10 | 5 min |
-| 5-Minute Walk | 15 | 5 min |
-| Gentle Stretching | 10 | 5 min |
-| Creative Doodling | 10 | 10 min |
-
-### 1.4 Final Clarity Calculation
-```typescript
-function calculateClarity(
-  screenTimeRecords: ScreenTimeRecord[],
-  completedActions: Action[]
-): number {
-  const entropy = calculateEntropy(screenTimeRecords);
-  const restoration = calculateRestoration(completedActions);
-  
-  // Base formula
-  const rawClarity = 100 - (entropy - restoration);
-  
-  // Clamp to valid range [0, 100]
-  return Math.max(0, Math.min(100, rawClarity));
-}
-```
-
-**Example Daily Cycle:**
-```
-Morning (8 AM):
-├─ Starting Clarity: 100
-├─ Screen Time: 0 min
-└─ Entropy: 0, Restoration: 0
-
-Mid-Morning (11 AM):
-├─ TikTok: 30 min → +22.5 entropy
-├─ Instagram: 20 min → +10 entropy
-├─ Total Entropy: 32.5
-└─ Clarity: 100 - 32.5 = 67.5%
-
-Lunch (12 PM):
-├─ User completes "Box Breathing" → +10 restoration
-├─ Net: 32.5 entropy - 10 restoration = 22.5
-└─ Clarity: 100 - 22.5 = 77.5%
-
-Evening (8 PM):
-├─ Additional screen time: 90 min mixed apps → +45 entropy
-├─ User completes "5-Min Walk" → +15 restoration
-├─ Total: 77.5 entropy - 25 restoration = 52.5
-└─ Final Clarity: 100 - 52.5 = 47.5%
+// Scenario 3: User scrolls 120 minutes, completes 3 actions
+const clarity = calculateClarity(100, 120, 3);
+// Result: 100 - (120 * 0.5) + (3 * 10) = 70%
 ```
 
 ---
 
-## SECTION 2: STATIC OVERLAY OPACITY
+### **1.2 App-Specific Entropy Rates**
 
-### 2.1 Visual Mapping Formula
-
-The static overlay opacity is directly derived from Clarity Score:
+Different apps accumulate entropy at different rates based on their dopamine variance (unpredictability of reward).
 ```typescript
-function calculateStaticOpacity(clarityScore: number): number {
-  // Invert clarity to get entropy percentage
-  const entropyPercent = 100 - clarityScore;
+// Entropy Rate Multipliers
+const ENTROPY_RATES: Record<string, number> = {
+  // High dopamine variance (infinite scroll, algorithm-driven)
+  'com.zhiliaoapp.musically': 1.5,        // TikTok
+  'com.instagram.instagram': 1.0,         // Instagram
+  'com.facebook.Facebook': 1.0,           // Facebook
   
-  // Map to opacity range [0.0, 0.5]
-  // We cap at 50% opacity to keep UI usable
-  const opacity = (entropyPercent / 100) * 0.5;
+  // Medium dopamine variance (community-driven)
+  'com.twitter.twitter': 0.8,             // Twitter/X
+  'com.reddit.Reddit': 0.8,               // Reddit
   
-  return opacity;
-}
-```
-
-**Opacity Table:**
-
-| Clarity Score | Entropy % | Static Opacity | Visual State |
-|---------------|-----------|----------------|--------------|
-| 100% | 0% | 0.00 | Crystal clear |
-| 90% | 10% | 0.05 | Barely visible |
-| 80% | 20% | 0.10 | Subtle grain |
-| 70% | 30% | 0.15 | Light texture |
-| 60% | 40% | 0.20 | Noticeable |
-| 50% | 50% | 0.25 | Foggy |
-| 40% | 60% | 0.30 | Heavy static |
-| 30% | 70% | 0.35 | Degraded |
-| 20% | 80% | 0.40 | Critical |
-| 10% | 90% | 0.45 | Nearly obscured |
-| 0% | 100% | 0.50 | Maximum static |
-
-### 2.2 Implementation
-```swift
-// iOS SwiftUI Implementation
-struct StaticOverlay: View {
-    let clarityScore: Int
-    
-    var opacity: Double {
-        let entropy = 100 - clarityScore
-        return min(Double(entropy) / 100.0 * 0.5, 0.5)
-    }
-    
-    var body: some View {
-        Image("grain-texture")
-            .resizable(resizingMode: .tile)
-            .opacity(opacity)
-            .allowsHitTesting(false)
-            .blendMode(.multiply)
-    }
-}
-```
-
-**Performance Note:** Static overlay must maintain 60 FPS. Use GPU-accelerated rendering.
-
----
-
-## SECTION 3: CONSCIOUS DAY LOGIC
-
-### 3.1 Boolean Formula
-
-A day qualifies as "Conscious" if ALL three conditions are met:
-```typescript
-function isConsciousDay(dayData: DayData): boolean {
-  const condition1 = dayData.interventionsAccepted >= 3;
-  const condition2 = dayData.screenTimeMinutes <= dayData.userThreshold;
-  const condition3 = dayData.finalClarityScore >= 60;
+  // Low dopamine variance (passive consumption)
+  'com.google.ios.youtube': 0.5,          // YouTube
+  'com.netflix.Netflix': 0.3,             // Netflix
   
-  return condition1 && condition2 && condition3;
-}
-```
-
-### 3.2 Condition Breakdown
-
-**Condition 1: Interventions Accepted ≥ 3**
-```typescript
-interface Intervention {
-  timestamp: Date;
-  accepted: boolean;  // true if completed, false if dismissed
-}
-
-function countAcceptedInterventions(interventions: Intervention[]): number {
-  return interventions.filter(i => i.accepted).length;
-}
-```
-
-**What counts as "accepted":**
-- User completed breathing exercise to unlock app
-- User manually completed action from Actions tab
-
-**What does NOT count:**
-- User dismissed shield (3× before 24h lockout)
-- User force-quit app during exercise
-
-**Condition 2: Screen Time Below Threshold**
-```typescript
-const LEVEL_THRESHOLDS: Record<Level, number> = {
-  'npc': 240,           // 4 hours
-  'glitch': 180,        // 3 hours
-  'hacker': 120,        // 2 hours
-  'main_character': 90, // 1.5 hours
-  'oracle': 60,         // 1 hour
+  // Default for unlisted apps
+  'default': 0.5,
 };
 
-function checkScreenTimeThreshold(
-  totalMinutes: number,
-  userLevel: Level
-): boolean {
-  const threshold = LEVEL_THRESHOLDS[userLevel];
-  return totalMinutes <= threshold;
-}
+// Calculate entropy for specific app
+const calculateAppEntropy = (
+  bundleId: string,
+  minutes: number
+): number => {
+  const rate = ENTROPY_RATES[bundleId] || ENTROPY_RATES['default'];
+  return minutes * 0.5 * rate;
+};
 ```
 
-**Condition 3: Final Clarity ≥ 60%**
+**Example with App-Specific Rates:**
+```typescript
+// TikTok: 60 minutes
+const tiktokEntropy = calculateAppEntropy('com.zhiliaoapp.musically', 60);
+// Result: 60 * 0.5 * 1.5 = 45 points
 
-At 11:59 PM each day, the system calculates final Clarity Score for that day. If ≥ 60%, condition passes.
+// YouTube: 60 minutes
+const youtubeEntropy = calculateAppEntropy('com.google.ios.youtube', 60);
+// Result: 60 * 0.5 * 0.5 = 15 points
 
-**Why 60%?** This represents a state where the user has actively managed their entropy. Below 60% indicates passive accumulation without restoration.
-
-### 3.3 Example Evaluations
-
-**Day 1: Conscious Day = TRUE**
-```
-User: Glitch level (threshold: 180 min)
-Screen Time: 165 min ✓
-Interventions Accepted: 4 ✓
-Final Clarity: 68% ✓
-Result: TRUE
-```
-
-**Day 2: Conscious Day = FALSE (Failed Condition 2)**
-```
-User: Glitch level (threshold: 180 min)
-Screen Time: 210 min ✗ (exceeded threshold)
-Interventions Accepted: 5 ✓
-Final Clarity: 55% ✗
-Result: FALSE
-```
-
-**Day 3: Conscious Day = FALSE (Failed Condition 1)**
-```
-User: Glitch level (threshold: 180 min)
-Screen Time: 120 min ✓
-Interventions Accepted: 2 ✗ (need 3+)
-Final Clarity: 75% ✓
-Result: FALSE
+// User scrolls both
+const totalEntropy = tiktokEntropy + youtubeEntropy;
+// Result: 45 + 15 = 60 points lost
 ```
 
 ---
 
-## SECTION 4: LEVEL PROGRESSION ALGORITHM
-
-### 4.1 Monthly Evaluation Formula
-
-**Runs on last day of each month (11:59 PM):**
+### **1.3 Action Restoration Values**
 ```typescript
-enum Level {
-  NPC = 'npc',
-  GLITCH = 'glitch',
-  HACKER = 'hacker',
-  MAIN_CHARACTER = 'main_character',
-  ORACLE = 'oracle',
-}
+// Restoration Points by Action
+const RESTORATION_VALUES: Record<string, number> = {
+  // Free tier (low-impact)
+  'breathing_box': 5,           // 1 min box breathing
+  'breathing_478': 8,           // 2 min 4-7-8 breathing
+  'hydration': 3,               // 30s drink water
+  'brown_noise': 8,             // 10 min brown noise
+  
+  // Pro tier (medium-impact)
+  'stretching': 10,             // 3 min stretch
+  'journal': 12,                // 5 min gratitude journal
+  
+  // Pro tier (high-impact)
+  'walk_5min': 15,              // 5 min walk
+  'reading': 20,                // 15 min analog reading
+};
 
-interface MonthlyStats {
-  avgScreenTimeMinutes: number;
-  consciousDaysCount: number;
-  totalDays: number;
-}
-
-function evaluateLevel(stats: MonthlyStats): Level {
-  const avgScreenTime = stats.avgScreenTimeMinutes;
-  const consciousDays = stats.consciousDaysCount;
-  
-  // Check thresholds in descending order (highest level first)
-  if (avgScreenTime <= 60 && consciousDays >= 20) {
-    return Level.ORACLE;
-  }
-  
-  if (avgScreenTime <= 90 && consciousDays >= 15) {
-    return Level.MAIN_CHARACTER;
-  }
-  
-  if (avgScreenTime <= 120 && consciousDays >= 10) {
-    return Level.HACKER;
-  }
-  
-  if (avgScreenTime <= 180 && consciousDays >= 5) {
-    return Level.GLITCH;
-  }
-  
-  return Level.NPC;
-}
+// Get restoration value for action
+const getRestorationValue = (actionId: string): number => {
+  return RESTORATION_VALUES[actionId] || 0;
+};
 ```
-
-### 4.2 Average Screen Time Calculation
-```typescript
-function calculateAvgScreenTime(last30Days: DayData[]): number {
-  const totalMinutes = last30Days.reduce((sum, day) => {
-    return sum + day.screenTimeMinutes;
-  }, 0);
-  
-  return totalMinutes / last30Days.length;
-}
-```
-
-**Example:**
-```
-Days 1-10: 120 min/day average
-Days 11-20: 150 min/day average
-Days 21-30: 90 min/day average
-
-Total: (120×10) + (150×10) + (90×10) = 3600 min
-Average: 3600 / 30 = 120 min/day
-
-Result: Qualifies for Hacker if 10+ Conscious Days
-```
-
-### 4.3 Level Transition Matrix
-
-| From Level | To Level | Requirement |
-|------------|----------|-------------|
-| NPC → Glitch | 7 days: <180 min/day + 5 Conscious Days in month |
-| Glitch → Hacker | 30 days: <120 min/day + 10 Conscious Days |
-| Hacker → Main Character | 60 days: <90 min/day + 15 Conscious Days |
-| Main Character → Oracle | 90 days: <60 min/day + 20 Conscious Days |
-| Any → NPC | 30 days: >240 min/day average OR <3 Conscious Days |
-
-**Note:** Levels can skip. If user goes from NPC to meeting Hacker criteria in one month, they jump directly to Hacker.
 
 ---
 
-## SECTION 5: DOWNGRADE PROTECTION (GRACE PERIOD)
+### **1.4 Blur Intensity Mapping**
 
-### 5.1 Grace Period Logic
-
-**Rule:** User must exceed threshold for **7 consecutive days** before downgrade.
+The UI blur intensity is directly mapped to clarity loss.
 ```typescript
-function shouldDowngrade(user: User, last7Days: DayData[]): boolean {
-  const currentLevel = user.level;
-  const threshold = LEVEL_THRESHOLDS[currentLevel];
-  
-  // Check if ALL 7 days exceeded threshold
-  const allDaysExceeded = last7Days.every(day => {
-    return day.screenTimeMinutes > threshold;
-  });
-  
-  return allDaysExceeded;
-}
+// Map Clarity (0-100) to Blur Intensity (0-100)
+const getBlurIntensity = (clarity: number): number => {
+  // Invert: 100% clarity = 0 blur, 0% clarity = 100 blur
+  return 100 - clarity;
+};
+
+// Map Clarity to Overlay Opacity (0.0-0.5)
+const getOverlayOpacity = (clarity: number): number => {
+  // Scale clarity loss (0-100) to opacity (0.0-0.5)
+  const clarityLoss = 100 - clarity;
+  return (clarityLoss / 100) * 0.5;
+};
 ```
 
-**Example Timeline:**
-```
-User: Hacker (threshold: 120 min/day)
+**Visual State Mapping:**
 
-Day 1: 150 min ⚠️
-Day 2: 140 min ⚠️
-Day 3: 160 min ⚠️
-Day 4: 110 min ✓ (breaks streak)
-Day 5: 145 min ⚠️
-Day 6: 130 min ⚠️
-Day 7: 125 min ⚠️
-
-Result: No downgrade (Day 4 broke consecutive streak)
-```
-
-**Continuous Violation:**
-```
-Day 1: 150 min ⚠️ (Grace day 1/7)
-Day 2: 140 min ⚠️ (Grace day 2/7)
-Day 3: 160 min ⚠️ (Grace day 3/7)
-Day 4: 155 min ⚠️ (Grace day 4/7)
-Day 5: 145 min ⚠️ (Grace day 5/7)
-Day 6: 130 min ⚠️ (Grace day 6/7)
-Day 7: 125 min ⚠️ (Grace day 7/7)
-
-Result: Downgrade to Glitch on Day 8
-```
-
-### 5.2 Downgrade Calculation
-```typescript
-function determineDowngrade(currentLevel: Level): Level {
-  const levels = [
-    Level.NPC,
-    Level.GLITCH,
-    Level.HACKER,
-    Level.MAIN_CHARACTER,
-    Level.ORACLE,
-  ];
-  
-  const currentIndex = levels.indexOf(currentLevel);
-  
-  // Move down one level
-  const newIndex = Math.max(0, currentIndex - 1);
-  
-  return levels[newIndex];
-}
-```
-
-**Downgrade is always one level at a time.** You cannot fall from Oracle → NPC in one step.
+| Clarity | Blur Intensity | Overlay Opacity | State |
+|---------|----------------|-----------------|-------|
+| 100% | 0 | 0.00 | Crystal clear |
+| 90% | 10 | 0.05 | Nearly perfect |
+| 80% | 20 | 0.10 | Slight haze |
+| 70% | 30 | 0.15 | Mild blur |
+| 60% | 40 | 0.20 | Moderate blur |
+| 50% | 50 | 0.25 | Heavy blur |
+| 40% | 60 | 0.30 | Severe blur |
+| 30% | 70 | 0.35 | Critical blur |
+| 20% | 80 | 0.40 | Nearly unreadable |
+| 10% | 90 | 0.45 | Extreme blur |
+| 0% | 100 | 0.50 | Maximum blur |
 
 ---
 
-## SECTION 6: SHIELD TRIGGER ALGORITHM
+## SECTION 2: SHIELD TRIGGER LOGIC
 
-### 6.1 Should Shield Appear?
+### **2.1 Trigger Conditions**
 ```typescript
-function shouldShowShield(
-  app: string,
-  clarityScore: number,
-  recentOpens: number
-): boolean {
-  // Check if app is monitored
-  const isMonitored = monitoredApps.includes(app);
-  if (!isMonitored) return false;
+// Determine if shield should appear
+const shouldTriggerShield = (
+  clarity: number,
+  recentOpens: number,      // Count in last 30 minutes
+  dismissalCount: number     // Count today
+): boolean => {
+  // Mandatory shield after 3 dismissals
+  if (dismissalCount >= 3) {
+    return true;
+  }
   
-  // Trigger if Clarity below 60%
-  if (clarityScore < 60) return true;
+  // Clarity below threshold
+  if (clarity < 60) {
+    return true;
+  }
   
-  // Trigger if app opened 3+ times in last 30 minutes (autopilot pattern)
-  if (recentOpens >= 3) return true;
+  // Doom loop detected (3+ opens in 30 min)
+  if (recentOpens >= 3) {
+    return true;
+  }
   
   return false;
-}
+};
 ```
 
-### 6.2 Recent Opens Tracking
+**Trigger Table:**
+
+| Clarity | Recent Opens | Dismissals Today | Shield Triggers? |
+|---------|--------------|------------------|------------------|
+| 85% | 1 | 0 | ❌ No |
+| 55% | 1 | 0 | ✅ Yes (clarity < 60%) |
+| 70% | 4 | 0 | ✅ Yes (doom loop) |
+| 80% | 2 | 3 | ✅ Yes (dismissal limit) |
+| 40% | 1 | 0 | ✅ Yes (clarity < 60%) |
+
+---
+
+### **2.2 Recent Opens Tracking**
 ```typescript
+// Track app opens in rolling 30-minute window
 interface AppOpen {
+  timestamp: number;
   bundleId: string;
-  timestamp: Date;
 }
 
-function countRecentOpens(
-  app: string,
-  history: AppOpen[],
+const countRecentOpens = (
+  opens: AppOpen[],
+  bundleId: string,
   windowMinutes: number = 30
-): number {
-  const now = new Date();
-  const windowStart = new Date(now.getTime() - windowMinutes * 60000);
+): number => {
+  const cutoff = Date.now() - (windowMinutes * 60 * 1000);
   
-  return history.filter(open => {
-    return open.bundleId === app && 
-           open.timestamp >= windowStart;
-  }).length;
-}
-```
-
-**Example:**
-```
-Time: 3:00 PM
-User opens Instagram → Check recent opens
-
-Recent history:
-- 2:35 PM: Instagram
-- 2:50 PM: Instagram
-- 3:00 PM: Instagram (current)
-
-Count = 3 → Trigger shield (autopilot detected)
+  return opens.filter(open => 
+    open.bundleId === bundleId && 
+    open.timestamp >= cutoff
+  ).length;
+};
 ```
 
 ---
 
-## SECTION 7: STREAK CALCULATION (PHASE 2)
-
-### 7.1 Streak Definition
-
-**Note:** Streaks are NOT in MVP, but the formula is defined here for future implementation.
+### **2.3 Unlock Window Duration**
 ```typescript
-function calculateStreak(consciousDays: boolean[]): number {
-  let currentStreak = 0;
-  
-  // Iterate backwards from today
-  for (let i = consciousDays.length - 1; i >= 0; i--) {
-    if (consciousDays[i]) {
-      currentStreak++;
-    } else {
-      break; // Streak broken
-    }
-  }
-  
-  return currentStreak;
-}
-```
+// Unlock duration after action completion
+const UNLOCK_DURATION_SECONDS = 60;
 
-**Example:**
-```
-Last 10 days: [true, true, false, true, true, true, true, true, true, true]
-                                           ↑ Current day
-
-Current Streak = 7 (last 7 consecutive days)
-```
-
-### 7.2 Peak Streak Tracking
-```typescript
-interface StreakData {
-  current: number;
-  peak: number;
-  lastBrokenDate: Date | null;
-}
-
-function updateStreak(data: StreakData, todayConscious: boolean): StreakData {
-  if (todayConscious) {
-    data.current++;
-    
-    // Update peak if exceeded
-    if (data.current > data.peak) {
-      data.peak = data.current;
-    }
-  } else {
-    // Streak broken
-    data.current = 0;
-    data.lastBrokenDate = new Date();
-  }
-  
-  return data;
-}
+// Check if still in unlock window
+const isUnlockWindowActive = (
+  completionTimestamp: number
+): boolean => {
+  const elapsed = (Date.now() - completionTimestamp) / 1000;
+  return elapsed < UNLOCK_DURATION_SECONDS;
+};
 ```
 
 ---
 
-## SECTION 8: UNLOCK WINDOW LOGIC
+## SECTION 3: CONSCIOUS DAY EVALUATION
 
-### 8.1 60-Second Access Window
+### **3.1 Definition**
 
-After completing an intervention, the user gets 60 seconds of unrestricted access to the blocked app.
+A "Conscious Day" is achieved when:
+1. User accepts ≥3 interventions
+2. Screen time stays below threshold
+3. Final clarity ≥60%
+4. Dismissals <3
 ```typescript
-interface UnlockWindow {
-  appBundleId: string;
-  unlockedAt: Date;
-  expiresAt: Date;
+// Evaluate if day qualifies as conscious
+interface DayStats {
+  interventionsAccepted: number;
+  screenTimeMinutes: number;
+  finalClarity: number;
+  dismissalCount: number;
 }
 
-function createUnlockWindow(app: string): UnlockWindow {
-  const now = new Date();
-  const expires = new Date(now.getTime() + 60000); // +60 seconds
+const isConsciousDay = (
+  stats: DayStats,
+  screenTimeThreshold: number
+): boolean => {
+  // Must accept at least 3 interventions
+  if (stats.interventionsAccepted < 3) {
+    return false;
+  }
   
-  return {
-    appBundleId: app,
-    unlockedAt: now,
-    expiresAt: expires,
+  // Must stay below screen time threshold
+  if (stats.screenTimeMinutes > screenTimeThreshold) {
+    return false;
+  }
+  
+  // Must maintain clarity above 60%
+  if (stats.finalClarity < 60) {
+    return false;
+  }
+  
+  // Must not exceed dismissal limit
+  if (stats.dismissalCount >= 3) {
+    return false;
+  }
+  
+  return true;
+};
+```
+
+**Example Evaluations:**
+```typescript
+// Scenario 1: Qualified conscious day
+const day1 = {
+  interventionsAccepted: 4,
+  screenTimeMinutes: 150,
+  finalClarity: 75,
+  dismissalCount: 1,
+};
+isConsciousDay(day1, 180); // true
+
+// Scenario 2: Failed (too few interventions)
+const day2 = {
+  interventionsAccepted: 2,
+  screenTimeMinutes: 120,
+  finalClarity: 80,
+  dismissalCount: 0,
+};
+isConsciousDay(day2, 180); // false
+
+// Scenario 3: Failed (too many dismissals)
+const day3 = {
+  interventionsAccepted: 5,
+  screenTimeMinutes: 100,
+  finalClarity: 85,
+  dismissalCount: 3,
+};
+isConsciousDay(day3, 180); // false
+```
+
+---
+
+## SECTION 4: LEVEL PROGRESSION SYSTEM
+
+### **4.1 Level Definitions**
+```typescript
+interface Level {
+  id: string;
+  name: string;
+  thresholds: {
+    avgScreenTime: number;         // minutes per day
+    consciousDaysPerMonth: number;
+    minClarity: number;            // average clarity %
   };
 }
 
-function isWindowActive(window: UnlockWindow): boolean {
-  const now = new Date();
-  return now < window.expiresAt;
-}
-```
-
-### 8.2 Shield Re-Lock Timing
-```swift
-// iOS ShieldConfiguration Extension
-override func configuration(shielding application: Application) -> ShieldConfiguration {
-    let appGroup = UserDefaults(suiteName: "group.exit.app")
-    let unlockTimestamp = appGroup?.double(forKey: "unlock_timestamp") ?? 0
-    let now = Date().timeIntervalSince1970
-    
-    // Check if within 60-second window
-    if now - unlockTimestamp < 60 {
-        let remaining = Int(60 - (now - unlockTimestamp))
-        
-        return ShieldConfiguration(
-            backgroundBlurStyle: .light,
-            backgroundColor: .systemGreen,
-            title: ShieldConfiguration.Label(
-                text: "Access Granted",
-                color: .white
-            ),
-            subtitle: ShieldConfiguration.Label(
-                text: "\(remaining)s remaining",
-                color: .white
-            )
-        )
-    }
-    
-    // Window expired, show normal shield
-    return normalShieldConfiguration()
-}
+const LEVELS: Level[] = [
+  {
+    id: 'npc',
+    name: 'The NPC',
+    thresholds: {
+      avgScreenTime: 240,      // 4h
+      consciousDaysPerMonth: 0,
+      minClarity: 0,
+    },
+  },
+  {
+    id: 'glitch',
+    name: 'The Glitch',
+    thresholds: {
+      avgScreenTime: 180,      // 3h
+      consciousDaysPerMonth: 5,
+      minClarity: 60,
+    },
+  },
+  {
+    id: 'hacker',
+    name: 'The Hacker',
+    thresholds: {
+      avgScreenTime: 120,      // 2h
+      consciousDaysPerMonth: 10,
+      minClarity: 70,
+    },
+  },
+  {
+    id: 'main_character',
+    name: 'The Main Character',
+    thresholds: {
+      avgScreenTime: 90,       // 1.5h
+      consciousDaysPerMonth: 15,
+      minClarity: 80,
+    },
+  },
+  {
+    id: 'oracle',
+    name: 'The Oracle',
+    thresholds: {
+      avgScreenTime: 60,       // 1h
+      consciousDaysPerMonth: 20,
+      minClarity: 85,
+    },
+  },
+];
 ```
 
 ---
 
-## SECTION 9: EDGE CASE HANDLING
-
-### 9.1 Division by Zero Protection
+### **4.2 Level Evaluation Algorithm**
 ```typescript
-function safeAverage(values: number[]): number {
-  if (values.length === 0) return 0;
+// Monthly stats for level evaluation
+interface MonthlyStats {
+  avgScreenTime: number;        // Average daily minutes
+  consciousDays: number;        // Total conscious days
+  avgClarity: number;           // Average clarity %
+}
+
+// Determine user's current level
+const evaluateLevel = (stats: MonthlyStats): Level => {
+  // Start from highest level, work down
+  for (let i = LEVELS.length - 1; i >= 0; i--) {
+    const level = LEVELS[i];
+    
+    if (
+      stats.avgScreenTime <= level.thresholds.avgScreenTime &&
+      stats.consciousDays >= level.thresholds.consciousDaysPerMonth &&
+      stats.avgClarity >= level.thresholds.minClarity
+    ) {
+      return level;
+    }
+  }
   
-  const sum = values.reduce((a, b) => a + b, 0);
-  return sum / values.length;
-}
-```
-
-### 9.2 Negative Clarity Prevention
-```typescript
-function clampClarity(raw: number): number {
-  return Math.max(0, Math.min(100, raw));
-}
-```
-
-**Example:**
-```
-Entropy: 150
-Restoration: 20
-Raw Clarity: 100 - (150 - 20) = -30
-
-Clamped: max(0, min(100, -30)) = 0
-```
-
-### 9.3 First Day Initialization
-
-On first launch, all values default to neutral/optimal state:
-```typescript
-const INITIAL_STATE = {
-  clarityScore: 100,
-  screenTimeToday: 0,
-  actionsCompleted: [],
-  consciousDays: [],
-  level: Level.NPC,
-  streak: 0,
+  // Default to NPC if no thresholds met
+  return LEVELS[0];
 };
 ```
 
-### 9.4 Day Rollover Logic
-
-At midnight (00:00), the system:
-
-1. Calculates final Clarity Score for previous day
-2. Evaluates Conscious Day status
-3. Resets daily counters:
-   - Screen time → 0
-   - Actions completed → []
-   - Intervention history → []
-4. Carries over Clarity Score (doesn't reset to 100)
+**Example Evaluations:**
 ```typescript
-function performDayRollover(currentState: AppState): AppState {
-  // Evaluate yesterday
-  const wasConscious = isConsciousDay({
-    interventionsAccepted: currentState.todayInterventions.length,
-    screenTimeMinutes: currentState.todayScreenTime,
-    finalClarityScore: currentState.clarityScore,
-    userThreshold: LEVEL_THRESHOLDS[currentState.level],
-  });
-  
-  // Update history
-  currentState.consciousDays.push(wasConscious);
-  
-  // Reset daily counters
-  currentState.todayScreenTime = 0;
-  currentState.todayInterventions = [];
-  currentState.todayActions = [];
-  
-  // Clarity carries over (does NOT reset)
-  
-  return currentState;
-}
+// Month 1: User starts
+const month1 = {
+  avgScreenTime: 200,
+  consciousDays: 3,
+  avgClarity: 55,
+};
+evaluateLevel(month1); // NPC (doesn't meet Glitch threshold)
+
+// Month 2: Progress
+const month2 = {
+  avgScreenTime: 170,
+  consciousDays: 6,
+  avgClarity: 65,
+};
+evaluateLevel(month2); // Glitch (meets all thresholds)
+
+// Month 3: Regression
+const month3 = {
+  avgScreenTime: 220,
+  consciousDays: 2,
+  avgClarity: 50,
+};
+evaluateLevel(month3); // NPC (downgrade)
 ```
 
 ---
 
-## SECTION 10: PERFORMANCE OPTIMIZATION
-
-### 10.1 Calculation Frequency
-
-| Calculation | Frequency | Trigger |
-|-------------|-----------|---------|
-| **Clarity Score** | Every 6 hours | Screen Time API refresh |
-| **Static Opacity** | Real-time | Clarity Score update |
-| **Conscious Day** | Daily | Midnight rollover |
-| **Level Evaluation** | Monthly | Last day of month, 11:59 PM |
-| **Shield Trigger** | Instant | App open attempt |
-
-### 10.2 Caching Strategy
+### **4.3 Upgrade/Downgrade Detection**
 ```typescript
-class ClarityCalculator {
-  private cachedScore: number = 100;
-  private lastCalculated: Date = new Date();
+// Check if user should upgrade
+const shouldUpgrade = (
+  currentLevel: Level,
+  stats: MonthlyStats
+): { upgrade: boolean; newLevel?: Level } => {
+  const currentIndex = LEVELS.findIndex(l => l.id === currentLevel.id);
   
-  public getClarity(): number {
-    const now = new Date();
-    const hoursSinceCalc = (now.getTime() - this.lastCalculated.getTime()) / 3600000;
-    
-    // Recalculate if >6 hours old
-    if (hoursSinceCalc >= 6) {
-      this.cachedScore = this.recalculate();
-      this.lastCalculated = now;
+  // Already at max level
+  if (currentIndex === LEVELS.length - 1) {
+    return { upgrade: false };
+  }
+  
+  const nextLevel = LEVELS[currentIndex + 1];
+  
+  // Check if meets next level thresholds
+  if (
+    stats.avgScreenTime <= nextLevel.thresholds.avgScreenTime &&
+    stats.consciousDays >= nextLevel.thresholds.consciousDaysPerMonth &&
+    stats.avgClarity >= nextLevel.thresholds.minClarity
+  ) {
+    return { upgrade: true, newLevel: nextLevel };
+  }
+  
+  return { upgrade: false };
+};
+
+// Check if user should downgrade
+const shouldDowngrade = (
+  currentLevel: Level,
+  stats: MonthlyStats
+): { downgrade: boolean; newLevel?: Level } => {
+  const currentIndex = LEVELS.findIndex(l => l.id === currentLevel.id);
+  
+  // Already at minimum level
+  if (currentIndex === 0) {
+    return { downgrade: false };
+  }
+  
+  // Check if fails current level thresholds
+  if (
+    stats.avgScreenTime > currentLevel.thresholds.avgScreenTime ||
+    stats.consciousDays < currentLevel.thresholds.consciousDaysPerMonth ||
+    stats.avgClarity < currentLevel.thresholds.minClarity
+  ) {
+    // Find highest level user still qualifies for
+    const newLevel = evaluateLevel(stats);
+    return { downgrade: true, newLevel };
+  }
+  
+  return { downgrade: false };
+};
+```
+
+---
+
+## SECTION 5: STREAK CALCULATION
+
+### **5.1 Streak Rules**
+```typescript
+// Calculate current streak
+const calculateStreak = (consciousDays: boolean[]): number => {
+  // consciousDays is array where index 0 = today, sorted newest first
+  let streak = 0;
+  
+  for (const isConscious of consciousDays) {
+    if (isConscious) {
+      streak++;
+    } else {
+      break; // Streak ends on first non-conscious day
     }
-    
-    return this.cachedScore;
   }
   
-  private recalculate(): number {
-    // Full calculation logic here
-  }
-}
+  return streak;
+};
 ```
 
-### 10.3 Memory Constraints
-
-**Store only last 90 days of detailed data:**
+**Example:**
 ```typescript
-function pruneOldData(history: DayData[]): DayData[] {
-  const now = new Date();
-  const cutoff = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-  
-  return history.filter(day => day.date >= cutoff);
-}
+// Last 7 days: [true, true, true, false, true, true, true]
+//              Today ↑                               ↑ 7 days ago
+calculateStreak([true, true, true, false, true, true, true]);
+// Result: 3 (current streak broke on day 4)
+
+// Last 7 days: [true, true, true, true, true, true, true]
+calculateStreak([true, true, true, true, true, true, true]);
+// Result: 7 (perfect week)
 ```
 
 ---
 
-## SECTION 11: TESTING SCENARIOS
-
-### 11.1 Unit Test Cases
+### **5.2 Streak Milestones**
 ```typescript
-describe('Clarity Score Calculation', () => {
-  test('Zero screen time = 100% clarity', () => {
-    const clarity = calculateClarity([], []);
-    expect(clarity).toBe(100);
+const STREAK_MILESTONES = {
+  7: {
+    badge: 'first_week',
+    title: 'The First Week',
+    clarityBonus: -20, // -20% static accumulation
+  },
+  30: {
+    badge: 'lunar_cycle',
+    title: 'The Lunar Cycle',
+    perk: 'deep_actions_unlock',
+  },
+  90: {
+    badge: 'the_season',
+    title: 'The Season',
+    perk: 'oracle_preview',
+  },
+};
+
+// Check if streak hits milestone
+const checkMilestone = (streak: number) => {
+  return STREAK_MILESTONES[streak] || null;
+};
+```
+
+---
+
+## SECTION 6: DAILY RESET LOGIC
+
+### **6.1 Reset Triggers**
+```typescript
+// Reset at 4 AM local time (industry standard)
+const RESET_HOUR = 4;
+
+// Check if new day has started
+const shouldResetDay = (lastResetTimestamp: number): boolean => {
+  const now = new Date();
+  const lastReset = new Date(lastResetTimestamp);
+  
+  // Get 4 AM today
+  const resetTime = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    RESET_HOUR,
+    0,
+    0
+  );
+  
+  // If current time is after 4 AM and last reset was before 4 AM, reset
+  return now >= resetTime && lastReset < resetTime;
+};
+
+// Reset daily counters
+const resetDailyState = async () => {
+  await StorageManager.set('daily_dismissals', 0);
+  await StorageManager.set('daily_interventions', 0);
+  await StorageManager.set('daily_screen_time', 0);
+  await StorageManager.set('last_reset_timestamp', Date.now());
+};
+```
+
+---
+
+## SECTION 7: CLARITY STATE MACHINE
+
+### **7.1 State Transitions**
+```typescript
+type ClarityState = 'crystal' | 'clear' | 'moderate' | 'low' | 'critical';
+
+// Get clarity state from score
+const getClarityState = (clarity: number): ClarityState => {
+  if (clarity >= 90) return 'crystal';
+  if (clarity >= 70) return 'clear';
+  if (clarity >= 50) return 'moderate';
+  if (clarity >= 30) return 'low';
+  return 'critical';
+};
+
+// State properties
+const CLARITY_STATES: Record<ClarityState, {
+  color: string;
+  sfSymbol: string;
+  message: string;
+}> = {
+  crystal: {
+    color: 'systemBlue',
+    sfSymbol: 'sparkles',
+    message: 'Crystal clear',
+  },
+  clear: {
+    color: 'systemGreen',
+    sfSymbol: 'checkmark.circle.fill',
+    message: 'Clear',
+  },
+  moderate: {
+    color: 'systemYellow',
+    sfSymbol: 'exclamationmark.triangle.fill',
+    message: 'Moderate clarity',
+  },
+  low: {
+    color: 'systemOrange',
+    sfSymbol: 'exclamationmark.circle.fill',
+    message: 'Low clarity',
+  },
+  critical: {
+    color: 'systemRed',
+    sfSymbol: 'exclamationmark.octagon.fill',
+    message: 'Critical - restore clarity',
+  },
+};
+```
+
+---
+
+## SECTION 8: FORMULA VALIDATION TESTS
+
+### **8.1 Unit Test Cases**
+```typescript
+// Test Suite: Clarity Calculation
+describe('Clarity Calculation', () => {
+  it('reduces clarity by 0.5 per minute scrolled', () => {
+    const clarity = calculateClarity(100, 60, 0);
+    expect(clarity).toBe(70); // 100 - (60 * 0.5)
   });
   
-  test('TikTok usage applies 1.5× entropy', () => {
-    const screenTime = [
-      { bundleId: 'com.zhiliaoapp.musically', durationMinutes: 60 }
-    ];
-    const entropy = calculateEntropy(screenTime);
-    expect(entropy).toBe(45); // 60 × 0.75
+  it('increases clarity by 10 per action', () => {
+    const clarity = calculateClarity(50, 0, 3);
+    expect(clarity).toBe(80); // 50 + (3 * 10)
   });
   
-  test('Clarity cannot go below 0', () => {
-    const screenTime = [
-      { bundleId: 'com.instagram.instagram', durationMinutes: 300 }
-    ];
-    const clarity = calculateClarity(screenTime, []);
-    expect(clarity).toBe(0);
+  it('bounds clarity between 0 and 100', () => {
+    const tooLow = calculateClarity(0, 100, 0);
+    expect(tooLow).toBe(0); // Cannot go below 0
+    
+    const tooHigh = calculateClarity(100, 0, 20);
+    expect(tooHigh).toBe(100); // Cannot exceed 100
   });
   
-  test('Action completion restores clarity', () => {
-    const screenTime = [
-      { bundleId: 'com.instagram.instagram', durationMinutes: 60 }
-    ];
-    const actions = [
-      { id: 'act_001', clarityPoints: 10 }
-    ];
-    const clarity = calculateClarity(screenTime, actions);
-    expect(clarity).toBe(80); // 100 - (30 - 10)
+  it('applies app-specific entropy rates', () => {
+    const tiktok = calculateAppEntropy('com.zhiliaoapp.musically', 60);
+    expect(tiktok).toBe(45); // 60 * 0.5 * 1.5
+    
+    const youtube = calculateAppEntropy('com.google.ios.youtube', 60);
+    expect(youtube).toBe(15); // 60 * 0.5 * 0.5
+  });
+});
+
+// Test Suite: Shield Triggers
+describe('Shield Trigger Logic', () => {
+  it('triggers when clarity < 60%', () => {
+    expect(shouldTriggerShield(55, 1, 0)).toBe(true);
+    expect(shouldTriggerShield(65, 1, 0)).toBe(false);
+  });
+  
+  it('triggers on doom loop (3+ opens)', () => {
+    expect(shouldTriggerShield(80, 3, 0)).toBe(true);
+    expect(shouldTriggerShield(80, 2, 0)).toBe(false);
+  });
+  
+  it('always triggers after 3 dismissals', () => {
+    expect(shouldTriggerShield(90, 1, 3)).toBe(true);
+  });
+});
+
+// Test Suite: Conscious Day
+describe('Conscious Day Evaluation', () => {
+  it('requires 3+ interventions', () => {
+    const day = {
+      interventionsAccepted: 2,
+      screenTimeMinutes: 100,
+      finalClarity: 70,
+      dismissalCount: 0,
+    };
+    expect(isConsciousDay(day, 180)).toBe(false);
+  });
+  
+  it('requires clarity >= 60%', () => {
+    const day = {
+      interventionsAccepted: 4,
+      screenTimeMinutes: 100,
+      finalClarity: 55,
+      dismissalCount: 0,
+    };
+    expect(isConsciousDay(day, 180)).toBe(false);
+  });
+  
+  it('passes with all criteria met', () => {
+    const day = {
+      interventionsAccepted: 4,
+      screenTimeMinutes: 150,
+      finalClarity: 75,
+      dismissalCount: 1,
+    };
+    expect(isConsciousDay(day, 180)).toBe(true);
   });
 });
 ```
 
-### 11.2 Integration Test Scenarios
-
-**Scenario 1: Full Day Cycle**
-```
-1. User starts day at 100% clarity
-2. Uses TikTok for 30 min → Clarity drops to 77.5%
-3. Completes Box Breathing → Clarity rises to 87.5%
-4. Uses Instagram for 60 min → Clarity drops to 57.5%
-5. Completes 5-Min Walk → Clarity rises to 72.5%
-6. Day ends at 72.5% (Conscious Day = TRUE if 3+ interventions)
-```
-
-**Scenario 2: Level Progression**
-```
-1. User starts at NPC (new account)
-2. Week 1: Avg 150 min/day, 3 Conscious Days
-3. Week 2: Avg 140 min/day, 4 Conscious Days
-4. Week 3: Avg 160 min/day, 2 Conscious Days
-5. Week 4: Avg 170 min/day, 3 Conscious Days
-6. Month End: Avg 155 min/day, 12 Conscious Days total
-7. Result: Promoted to Glitch (threshold: <180 min, 5+ days)
-```
-
 ---
 
-## SECTION 12: FORMULA VERSIONING
+## SECTION 9: EDGE CASES & SAFETY NETS
 
-### 12.1 Change Log
-
-**v1.0 (Current):**
-- Initial formulas defined
-- Entropy rates established
-- Conscious Day logic finalized
-
-**Future Consideration (v2.0):**
-- Context-aware entropy (late-night usage = higher entropy)
-- Diminishing returns on repeated actions (3rd walk = only +10 instead of +15)
-- Bonus multipliers for diverse action types
-
-### 12.2 Migration Strategy
-
-If formulas change in future versions:
+### **9.1 Negative Clarity Protection**
 ```typescript
-const FORMULA_VERSION = '1.0';
-
-interface UserData {
-  formulaVersion: string;
-  clarityScore: number;
-  // ...other fields
-}
-
-function migrateUserData(data: UserData): UserData {
-  if (data.formulaVersion === '1.0' && FORMULA_VERSION === '2.0') {
-    // Apply migration logic
-    data.clarityScore = recalculateWithV2(data);
-    data.formulaVersion = '2.0';
+// Prevent clarity from going negative
+const safeCalculateClarity = (
+  current: number,
+  entropy: number,
+  restoration: number
+): number => {
+  const result = current - entropy + restoration;
+  
+  // Floor at 0
+  if (result < 0) {
+    console.warn('Clarity attempted to go negative, clamped to 0');
+    return 0;
   }
   
-  return data;
-}
-```
-
----
-
-## APPENDIX A: QUICK REFERENCE
-
-### Core Constants
-```typescript
-const BASE_ENTROPY_RATE = 0.5;          // Points per minute
-const TIKTOK_MULTIPLIER = 1.5;
-const YOUTUBE_MULTIPLIER = 0.5;
-const CONSCIOUS_DAY_THRESHOLD = 60;     // Clarity %
-const SHIELD_TRIGGER_CLARITY = 60;      // Clarity %
-const SHIELD_TRIGGER_OPENS = 3;         // Opens in 30 min
-const UNLOCK_WINDOW_SECONDS = 60;
-const GRACE_PERIOD_DAYS = 7;
-const INTERVENTION_DAILY_MIN = 3;
-```
-
-### Level Thresholds
-```typescript
-const LEVEL_SCREEN_TIME: Record<Level, number> = {
-  npc: 240,           // 4h
-  glitch: 180,        // 3h
-  hacker: 120,        // 2h
-  main_character: 90, // 1.5h
-  oracle: 60,         // 1h
+  return Math.round(result);
 };
 ```
 
 ---
 
-## APPENDIX B: PSEUDOCODE SUMMARY
-```
-EVERY 6 HOURS:
-  ScreenTime ← GetFromiOS()
-  Entropy ← CalculateEntropy(ScreenTime)
-  Restoration ← SumActionPoints(CompletedActions)
-  Clarity ← Clamp(100 - (Entropy - Restoration), 0, 100)
-  StaticOpacity ← (100 - Clarity) / 100 * 0.5
-
-ON APP OPEN:
-  IF (App IN MonitoredApps) AND (Clarity < 60 OR RecentOpens ≥ 3):
-    SHOW Shield
-    IF UserCompletesIntervention:
-      CreateUnlockWindow(60 seconds)
-      AllowAccess()
-
-AT MIDNIGHT:
-  ConsciousDay ← (Interventions ≥ 3) AND (ScreenTime ≤ Threshold) AND (Clarity ≥ 60)
-  AppendToHistory(ConsciousDay)
-  ResetDailyCounters()
-
-AT MONTH END:
-  AvgScreenTime ← Mean(Last30Days.ScreenTime)
-  ConsciousDaysCount ← Count(Last30Days.ConsciousDays)
-  NewLevel ← EvaluateLevel(AvgScreenTime, ConsciousDaysCount)
-  IF NewLevel ≠ CurrentLevel:
-    TransitionToLevel(NewLevel)
+### **9.2 Overflow Protection**
+```typescript
+// Prevent clarity from exceeding 100
+const safeCap = (clarity: number): number => {
+  if (clarity > 100) {
+    console.warn('Clarity exceeded 100, capped');
+    return 100;
+  }
+  
+  return clarity;
+};
 ```
 
 ---
 
-**Document Status:** ENGINEERING READY  
-**Implementation Priority:** HIGH  
-**Dependencies:** None (all local calculations)
+### **9.3 Invalid Input Handling**
+```typescript
+// Validate inputs
+const validateClarityInputs = (
+  clarity: number,
+  screenTime: number,
+  actions: number
+): boolean => {
+  if (clarity < 0 || clarity > 100) {
+    console.error('Invalid clarity:', clarity);
+    return false;
+  }
+  
+  if (screenTime < 0) {
+    console.error('Invalid screen time:', screenTime);
+    return false;
+  }
+  
+  if (actions < 0) {
+    console.error('Invalid action count:', actions);
+    return false;
+  }
+  
+  return true;
+};
+```
+
+---
+
+## APPENDIX: FORMULA REFERENCE CARD
+
+### **Quick Reference**
+
+| Formula | Expression | Notes |
+|---------|-----------|-------|
+| **Clarity** | `current - (screenTime × 0.5) + (actions × 10)` | Bounded [0, 100] |
+| **App Entropy** | `minutes × 0.5 × rate` | Rate varies by app |
+| **Blur Intensity** | `100 - clarity` | Direct inverse |
+| **Overlay Opacity** | `(100 - clarity) / 100 × 0.5` | Max 0.5 |
+| **Shield Trigger** | `clarity < 60 OR opens >= 3 OR dismissals >= 3` | Any condition |
+| **Conscious Day** | `interventions >= 3 AND clarity >= 60 AND dismissals < 3` | All required |
+| **Unlock Duration** | `60 seconds` | Fixed |
+| **Daily Reset** | `4:00 AM local` | Fixed |
+
+---
+
+**Document Status:** IMMUTABLE (Requires Product Approval to Modify)  
+**Version:** 2.0 (Native iOS Edition)  
+**Last Updated:** January 3, 2026
 
 ---
