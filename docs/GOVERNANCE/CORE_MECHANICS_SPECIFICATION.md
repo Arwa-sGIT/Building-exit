@@ -1,7 +1,7 @@
 # CORE MECHANICS SPECIFICATION
 
 **Status:** SEMI-LOCKED (System Logic)  
-**Version:** 2.0 (Native iOS Edition)  
+**Version:** 3.0 (Native iOS Edition)  
 **Date:** January 3, 2026  
 **Owner:** Lead Systems Architect
 
